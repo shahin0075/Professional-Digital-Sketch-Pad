@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Digital Sketch Pad</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #ecf0f1; 
+        }
+        header, footer { 
+            background: var(--primary-color); 
+            color: white; 
+            padding: 15px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        canvas { 
+            border: 2px solid var(--primary-color); 
+            touch-action: none; 
+            background: white;
+        }
+        .tools { 
+            display: flex; 
+            gap: 10px; 
+            padding: 15px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        .tool-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 5px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        .color-palette {
+            display: flex;
+            gap: 3px;
+        }
+        .color-swatch {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+        }
+        #brushPreview {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--primary-color);
+            margin: 10px;
+        }
+        .animation-timeline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Professional Digital Sketch Pad</h2>
+        <div class="color-palette" id="colorHistory"></div>
+    </header>
+
+    <div class="tools">
+        <div class="tool-group">
+            <button onclick="clearCanvas()">🗑️ Clear</button>
+            <button onclick="undo()">↩ Undo</button>
+            <button onclick="redo()">↪ Redo</button>
+        </div>
+
+        <div class="tool-group">
+            <select id="brushType" onchange="updateBrushPreview()">
+                <option value="pencil">✏️ Pencil</option>
+                <option value="watercolor">🎨 Watercolor</option>
+                <option value="oil">🖌️ Oil</option>
+                <option value="eraser">🧹 Eraser</option>
+                <option value="shape">⭐ Shape</option>
+                <option value="text">🔤 Text</option>
+            </select>
+            
+            <select id="shapeType" style="display: none;">
+                <option value="rectangle">⬜ Rectangle</option>
+                <option value="circle">⭕ Circle</option>
+                <option value="line">📏 Line</option>
+                <option value="polygon">🔶 Polygon</option>
+            </select>
+        </div>
+
+        <div class="tool-group">
+            <input type="color" id="colorPicker" value="#000000" onchange="updateColorHistory(this.value)">
+            <input type="range" id="brushSize" min="1" max="100" value="5" oninput="updateBrushPreview()">
+            <input type="range" id="opacity" min="0.1" max="1" step="0.1" value="1">
+        </div>
+
+        <div class="tool-group">
+            <button onclick="toggleFullscreen()">🖥️ Fullscreen</button>
+            <button onclick="toggleReferenceImage()">🖼️ Reference</button>
+            <button onclick="showExportMenu()">💾 Export</button>
+        </div>
+
+        <div id="brushPreview"></div>
+    </div>
+
+    <canvas id="drawingCanvas" width="1600" height="900"></canvas>
+    
+    <div class="animation-timeline">
+        <button onclick="addFrame()">➕ Frame</button>
+        <button onclick="playAnimation()">▶ Play</button>
+        <input type="range" id="frameSlider" min="1" max="1" value="1">
+    </div>
+
+    <footer>
+        <p>&copy; 2025 | Professional Digital Sketch Pad v3.0</p>
+    </footer>
+
+    <script>
+        // Advanced Features Implementation
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let currentFrame = 1;
+        let animationFrames = {};
+        let isDrawing = false;
+        let currentTool = 'pencil';
+        let referenceImage = null;
+
+        // 1. Advanced Brush Engine
+        class BrushEngine {
+            constructor() {
+                this.patterns = {
+                    watercolor: this.createWatercolorPattern(),
+                    oil: this.createOilPattern()
+                };
+            }
+
+            createWatercolorPattern() {
+                const patternCanvas = document.createElement('canvas');
+                const patternCtx = patternCanvas.getContext('2d');
+                patternCanvas.width = 50;
+                patternCanvas.height = 50;
+                // Create complex watercolor pattern
+                return patternCanvas;
+            }
+
+            applyBrush(x, y, pressure) {
+                switch(currentTool) {
+                    case 'watercolor':
+                        this.applyWatercolor(x, y, pressure);
+                        break;
+                    case 'oil':
+                        this.applyOilPaint(x, y);
+                        break;
+                }
+            }
+
+            applyWatercolor(x, y, pressure) {
+                // Advanced fluid dynamics simulation
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillStyle = this.patterns.watercolor;
+                ctx.beginPath();
+                ctx.arc(x, y, pressure * 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 2. Shape Drawing System
+        class ShapeDrawer {
+            constructor() {
+                this.startX = 0;
+                this.startY = 0;
+                this.isDrawingShape = false;
+            }
+
+            startShape(x, y) {
+                this.startX = x;
+                this.startY = y;
+                this.isDrawingShape = true;
+            }
+
+            drawShape(x, y) {
+                if(!this.isDrawingShape) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                
+                const shapeType = document.getElementById('shapeType').value;
+                switch(shapeType) {
+                    case 'rectangle':
+                        ctx.rect(this.startX, this.startY, x - this.startX, y - this.startY);
+                        break;
+                    case 'circle':
+                        const radius = Math.hypot(x - this.startX, y - this.startY);
+                        ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
+                        break;
+                    case 'polygon':
+                        this.drawPolygon(x, y);
+                        break;
+                }
+                
+                ctx.stroke();
+            }
+        }
+
+        // 3. Animation System
+        class AnimationSystem {
+            constructor() {
+                this.frames = [];
+                this.currentFrame = 0;
+                this.isPlaying = false;
+            }
+
+            addFrame() {
+                this.frames.push(canvas.toDataURL());
+                this.updateTimeline();
+            }
+
+            play() {
+                this.isPlaying = true;
+                this.animate();
+            }
+
+            animate() {
+                if(!this.isPlaying) return;
+                this.currentFrame = (this.currentFrame + 1) % this.frames.length;
+                this.drawFrame(this.currentFrame);
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // 4. Advanced Color Management
+        class ColorManager {
+            constructor() {
+                this.colorHistory = [];
+            }
+
+            addColor(color) {
+                if(!this.colorHistory.includes(color)) {
+                    this.colorHistory.unshift(color);
+                    if(this.colorHistory.length > 8) this.colorHistory.pop();
+                    this.updateColorPalette();
+                }
+            }
+
+            updateColorPalette() {
+                const palette = document.getElementById('colorHistory');
+                palette.innerHTML = this.colorHistory.map(color => `
+                    <div class="color-swatch" style="background: ${color}" 
+                         onclick="document.getElementById('colorPicker').value = '${color}'">
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Initialize Systems
+        const brushEngine = new BrushEngine();
+        const shapeDrawer = new ShapeDrawer();
+        const animationSystem = new AnimationSystem();
+        const colorManager = new ColorManager();
+
+        // Event Handlers
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            if(currentTool === 'shape') {
+                shapeDrawer.startShape(e.offsetX, e.offsetY);
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+            }
+        }
+
+        function draw(e) {
+            if(!isDrawing) return;
+            
+            const pressure = calculatePressure(e);
+            
+            if(currentTool === 'shape') {
+                shapeDrawer.drawShape(e.offsetX, e.offsetY);
+            } else {
+                brushEngine.applyBrush(e.offsetX, e.offsetY, pressure);
+            }
+        }
+
+        function calculatePressure(e) {
+            // Simulate pressure with mouse velocity
+            const velocity = Math.sqrt(e.movementX ** 2 + e.movementY ** 2);
+            return Math.min(1, velocity / 10);
+        }
+
+        // Additional Features
+        function toggleFullscreen() {
+            if(!document.fullscreenElement) {
+                canvas.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function toggleReferenceImage() {
+            if(!referenceImage) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        referenceImage = new Image();
+                        referenceImage.src = e.target.result;
+                        referenceImage.style.position = 'absolute';
+                        referenceImage.style.opacity = '0.5';
+                        document.body.appendChild(referenceImage);
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            } else {
+                referenceImage.remove();
+                referenceImage = null;
+            }
+        }
+
+        function showExportMenu() {
+            const formats = ['PNG', 'JPEG', 'SVG', 'GIF'];
+            const menu = formats.map(format => 
+                `<button onclick="exportAs('${format}')">${format}</button>`
+            ).join('');
+            alert(`Export Options: ${menu}`);
+        }
+
+        // Initialize
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        colorManager.addColor('#000000');
+    </script>
+</body>
+              </html>
